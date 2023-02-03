@@ -27,11 +27,11 @@ public class Filewrite {
         try {
 
             FileWriter wrt = new FileWriter(dir + File.separator + dte + "_" + mnt + "_" + yer + "_" + userid+ "_" + hr + "_" + min + ".txt", true);
-            Log.e("1234567", encryptedString);
+
 
             wrt.append(data_str);
             wrt.close();
-
+            Log.e("SINGLE ELEMENT 12", data_str);
         } catch (IOException e) {
             e.printStackTrace();
             Log.e("exp", String.valueOf(e));
