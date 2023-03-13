@@ -1,9 +1,7 @@
 package com.example.liveaction_int;
 
 import android.os.Build;
-import android.util.Log;
 
-import java.nio.charset.StandardCharsets;
 import java.security.spec.KeySpec;
 import java.util.Base64;
 
@@ -21,7 +19,7 @@ public class Encrypti {
 
 
         public String enrycpp(String strToEncrypt){
-            Log.e("string",strToEncrypt);
+
             try {
 //Log.e("string",strToEncrypt);
                 // Create default byte array
@@ -44,13 +42,17 @@ public class Encrypti {
                 SecretKeySpec secretKey = new SecretKeySpec(
                         tmp.getEncoded(), "AES");
 
+
                 Cipher cipher = Cipher.getInstance(
                         "AES/CBC/PKCS5Padding");
                 cipher.init(Cipher.ENCRYPT_MODE, secretKey,
                         ivspec);
                 // Return encrypted string
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    return Base64.getEncoder().encodeToString(cipher.doFinal(strToEncrypt.getBytes(StandardCharsets.UTF_8)));
+//                    return Base64.getEncoder().encodeToString(cipher.doFinal(strToEncrypt.getBytes(StandardCharsets.UTF_8)));
+                    return Base64.getEncoder().encodeToString(
+                            cipher.doFinal(strToEncrypt.getBytes()));
+
                 }
             }
             catch (Exception e) {

@@ -1,11 +1,6 @@
 package com.example.liveaction_int;
 
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.os.BatteryManager;
 import android.os.StrictMode;
 import android.util.Log;
 
@@ -14,33 +9,32 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
-import java.net.NetworkInterface;
 import java.net.URL;
 import java.util.Calendar;
 
 public class FileSender {
     int serverResponseCode = 0;
     String upLoadServerUri = null;
-    public void sender(String urrl, String must_dir, String dir , Calendar c, boolean charging, NetworkInfo netInfo,String s2){
+    public void sender(String urrl, String dir , Calendar c, boolean charging, NetworkInfo netInfo,String s2){
         String dte = String.valueOf(c.get(Calendar.DATE));
         String mnt = String.valueOf(c.get(Calendar.MONTH) + 1);
         String yer = String.valueOf(c.get(Calendar.YEAR));
-        String sec = String.valueOf(c.get(Calendar.SECOND));
+
         String min = String.valueOf(c.get(Calendar.MINUTE));
         String hr = String.valueOf(c.get(Calendar.HOUR_OF_DAY));
 
 
         if (charging==true){
             if (!(netInfo == null)) {
-                Log.e("nice", "net connected");
 
-                File f = new File(must_dir, "lifeaction");// originl
+
+                File f = new File(dir);// originl
                 try {
                     File[] file = f.listFiles();
-                    Log.e("lenn", String.valueOf(file.length));
+
                     for (int i = 0; i < file.length; i++) {
                         String uploadFileName = file[i].getName();
-                        Log.e("file nam ", uploadFileName);
+
                         String fnm = dte + "_" + mnt + "_" + yer + "_" + s2 + "_" + hr + "_" + min + ".txt";
                         //    20_12_2022_62_157.txt
                         if (!uploadFileName.equals(fnm)) {
@@ -52,7 +46,9 @@ public class FileSender {
                             StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
 
                             StrictMode.setThreadPolicy(policy);
-                           String  upLoadServerUri = urrl + "/rawData/writeFile";
+                            upLoadServerUri ="https://lifeactions.online/rawData/writeFile";
+//                           String  upLoadServerUri = urrl + "/rawData/writeFile";
+
 //    upLoadServerUri ="https://9f88-122-169-92-160.in.ngrok.io/rawData/writeFile"; ///temp_encryp
 //                        upLoadServerUri ="https://perfect-eel-fashion.cyclic.app/rawData/writeFile";///temp_encryp
 
@@ -74,14 +70,11 @@ public class FileSender {
                             if (!sourceFile.isFile()) {
 
 
-                                Log.e("uploadFile", "Source File not exist :"
-                                        + dir + "" + uploadFileName);
+
 
                             } else {
                                 try {
-                                    Log.e("conn", "reched here");
 
-                                    Log.e("read", String.valueOf(sourceFile));
 //            CipherInputStream cp= new CipherInputStream(sourceFile);
                                     FileInputStream fileInputStream = new FileInputStream(sourceFile);
                                     URL url = new URL(upLoadServerUri);
@@ -104,7 +97,6 @@ public class FileSender {
                                     dos.writeBytes(twoHyphens + boundary + lineEnd);
                                     dos.writeBytes("Content-Disposition: form-data; name=\"file\";filename=\""
                                             + file_absol + "\"" + lineEnd);
-                                    Log.e("f_name", file_absol);
                                     dos.writeBytes(lineEnd);
 
                                     // create a buffer of  maximum size
