@@ -23,20 +23,15 @@ public class FileSender {
         String min = String.valueOf(c.get(Calendar.MINUTE));
         String hr = String.valueOf(c.get(Calendar.HOUR_OF_DAY));
 
-
         if (charging==true){
             if (!(netInfo == null)) {
-
-
                 File f = new File(dir);// originl
                 try {
                     File[] file = f.listFiles();
-
                     for (int i = 0; i < file.length; i++) {
                         String uploadFileName = file[i].getName();
-
                         String fnm = dte + "_" + mnt + "_" + yer + "_" + s2 + "_" + hr + "_" + min + ".txt";
-                        //    20_12_2022_62_157.txt
+
                         if (!uploadFileName.equals(fnm)) {
 
 
@@ -46,7 +41,7 @@ public class FileSender {
                             StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
 
                             StrictMode.setThreadPolicy(policy);
-                            upLoadServerUri ="https://lifeactions.online/rawData/writeFile";
+                            upLoadServerUri ="https://lifeactions.online/rawData/writeFile"; // release url
 //                           String  upLoadServerUri = urrl + "/rawData/writeFile";
 
 //    upLoadServerUri ="https://9f88-122-169-92-160.in.ngrok.io/rawData/writeFile"; ///temp_encryp
@@ -68,9 +63,6 @@ public class FileSender {
                             File sourceFile = new File(file_absol);
 
                             if (!sourceFile.isFile()) {
-
-
-
 
                             } else {
                                 try {

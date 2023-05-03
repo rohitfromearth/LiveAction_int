@@ -15,7 +15,7 @@ public class FileWriteRead {
 
     Encrypti er;
 
-    public void RWFile( Calendar c, String dir, String s2) {
+    public void RWFile(Calendar c, String dir, String s2) {
         er = new Encrypti();
         String dte = String.valueOf(c.get(Calendar.DATE));
         String mnt = String.valueOf(c.get(Calendar.MONTH) + 1);
@@ -31,31 +31,45 @@ public class FileWriteRead {
 
             for (int i = 0; i < file.length; i++) {
                 String uploadFileName = file[i].getName();
-                String usdata= dte + "_" + mnt + "_" + yer + "_" + s2 + "_" + hr + "_" + min + "US" + ".txt";
+                String usdata = dte + "_" + mnt + "_" + yer + "_" + s2 + "_" + hr + "_" + min + "US" + ".txt";
                 String fnm = dte + "_" + mnt + "_" + yer + "_" + s2 + "_" + hr + "_" + min + ".txt";
                 //    20_12_2022_62_157.txt
 
-                if (!uploadFileName.equals(fnm) && !uploadFileName.equals(usdata) && !uploadFileName.startsWith("ecr")){
+                if (!uploadFileName.equals(fnm) && !uploadFileName.equals(usdata) && !uploadFileName.startsWith("ecr")) {
 
 //                        if (!uploadFileName.equals(fnm||usdata)) {
 //                    String file_absol = dir + File.separator + uploadFileName;
                     File downloadFolder = new File(dir);
-                    File dataFile = new File(downloadFolder, uploadFileName);
-                    String dassh = readFile(dataFile);
-                    Log.e("marer",dassh);
-                    if (dassh != null) {
 
-                    String enrcyp = er.enrycpp(dassh);
-                    try {
-                        FileWriter wrt = new FileWriter(dir + File.separator + "ecr" + uploadFileName, true);
-                        wrt.append(enrcyp);
-                        wrt.close();
+                    //////new encrypt implementation 28- april///
+                    File dataFile = new File(downloadFolder, uploadFileName);
+                    String filePath = dir + File.separator + uploadFileName;
+
+                    String outfilePath= dir + File.separator + "ecr" + uploadFileName;
+                  Boolean value = er.encryptFile(filePath, outfilePath);
+                    if (value){
                         dataFile.delete();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        Log.e("WRFIlelogfr", String.valueOf(e));
                     }
-                }
+///////////////////////////////////////////
+
+
+
+//                    File dataFile = new File(downloadFolder, uploadFileName);
+//                    String dassh = readFile(dataFile);
+//                    Log.e("marer", dassh);
+//                    if (dassh != null) {
+//
+//                        String enrcyp = er.enrycpp(dassh);
+//                        try {
+//                            FileWriter wrt = new FileWriter(dir + File.separator + "ecr" + uploadFileName, true);
+//                            wrt.append(enrcyp);
+//                            wrt.close();
+//                            dataFile.delete();
+//                        } catch (IOException e) {
+//                            e.printStackTrace();
+//                            Log.e("WRFIlelogfr", String.valueOf(e));
+//                        }
+//                    }
 
                 }
 
@@ -67,10 +81,9 @@ public class FileWriteRead {
         }
 
 
-
-
     }
-    public String readFile(File dataFile ) {
+
+    public String readFile(File dataFile) {
         String content = "";
         try (FileInputStream fis = new FileInputStream(dataFile)) {
             InputStreamReader isr = new InputStreamReader(fis);

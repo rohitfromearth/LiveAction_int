@@ -28,6 +28,7 @@ import android.os.StrictMode;
 import android.provider.Settings;
 import android.telephony.TelephonyManager;
 import android.util.Log;
+import android.util.Pair;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 
@@ -58,21 +59,21 @@ import java.util.concurrent.Executor;
 import javax.net.ssl.HttpsURLConnection;
 
 public class Access_new extends AccessibilityService {
-    String s2=""; // for shared pref
-    String dir="";
-    String Adid="";/// for shared pref
-    String Google_AAID="";
+    String s2 = ""; // for shared pref
+    String dir = "";
+    String Adid = "";/// for shared pref
+    String Google_AAID = "";
     private int previousSecond = -1;
     int executiondateInt;
     int dte;
     String abt = "";//// for shared pref
-    String[] appslist = new String []{}; // Event package Input Api///shared pref
+    String[] appslist = new String[]{}; // Event package Input Api///shared pref
 
     private static final long COLLECTION_INTERVAL = 2 * 1000; // 1 minute
-
-    FileSender fs =new FileSender();
+    Boolean si = false;
+    FileSender fs = new FileSender();
     Filewrite fw = new Filewrite();
-        FileWriteRead frw = new FileWriteRead();
+    FileWriteRead frw = new FileWriteRead();
     String must_dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getPath();
 
     ArrayList<String> appl = new ArrayList<String>();///// for input Api package list
@@ -80,6 +81,8 @@ public class Access_new extends AccessibilityService {
     private ArrayList<String> installedApps; /// array list for inatalld  appltion
     private static final String NOTIFICATION_CHANNEL_ID = "MyChannelId";
     private static final int NOTIFICATION_ID = 12345;
+    int counter = 0;
+    Integer prevMin = -1;
 
     @Override
     public void onCreate() {
@@ -108,11 +111,7 @@ public class Access_new extends AccessibilityService {
         // Create the notification channel
         NotificationChannel channel = null;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            channel = new NotificationChannel(
-                    NOTIFICATION_CHANNEL_ID,
-                    "My Notification Channel",
-                    NotificationManager.IMPORTANCE_HIGH
-            );
+            channel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, "My Notification Channel", NotificationManager.IMPORTANCE_HIGH);
         }
         NotificationManager notificationManager = null;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -123,12 +122,7 @@ public class Access_new extends AccessibilityService {
         }
 
         // Create the notification and set it to be ongoing
-        Notification notification = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
-                .setContentTitle("My App")
-                .setContentText("Running in the background")
-                .setSmallIcon(R.drawable.img)
-                .setOngoing(true)
-                .build();
+        Notification notification = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID).setContentTitle("My App").setContentText("Running in the background").setSmallIcon(R.drawable.img).setOngoing(true).build();
 
         // Show the notification
         startForeground(NOTIFICATION_ID, notification);
@@ -157,6 +151,10 @@ public class Access_new extends AccessibilityService {
 
         ////calender ref //////
         final Calendar c = Calendar.getInstance();
+        if (prevMin != c.get(Calendar.MINUTE)) {
+            counter = 0;
+            prevMin = c.get(Calendar.MINUTE);
+        }
         int second = c.get(Calendar.SECOND);
         /////// input of shared pref - userid, dir, api endpoint//////
         SharedPreferences sh = getSharedPreferences("MySharedPref", MODE_PRIVATE);
@@ -165,16 +163,12 @@ public class Access_new extends AccessibilityService {
         abt = sh.getString("endpt", "");
         executiondateInt = sh.getInt("executiondate", 0);
 
-
+        int a = 0;
         if (executiondateInt != c.get(Calendar.DATE)) {
             ////////trigger for usage data file creation /////////
-//        if (c.get(Calendar.HOUR_OF_DAY) == 15 ||
-//                c.get(Calendar.HOUR_OF_DAY) == 9 ||
-//                c.get(Calendar.HOUR_OF_DAY) == 12 ||
-//                c.get(Calendar.HOUR_OF_DAY) == 18) {
+
 
             usedata(c);
-//        }
 
 
         }
@@ -186,24 +180,9 @@ public class Access_new extends AccessibilityService {
 
         if (second != previousSecond) {
             previousSecond = second;
-
+            Log.e("new_string_second", String.valueOf(previousSecond));
             AccessibilityNodeInfo source = event.getSource();
-//        if (event.getEventType()== AccessibilityEvent.TYPE_VIEW_CLICKED){
-//            String Text = String.valueOf(event.getText());
-//            String Content_Desc = String.valueOf(event.getContentDescription());
-//            String str_ty = c.get(Calendar.YEAR) + "-" + String.valueOf(c.get(Calendar.MONTH) + 1) + "-" + c.get(Calendar.DATE) + ":" + c.get(Calendar.HOUR_OF_DAY) + ":" + c.get(Calendar.MINUTE) + ":" + c.get(Calendar.SECOND) + ":" + c.get(Calendar.MILLISECOND);
-//            String Pack_name = String.valueOf(event.getPackageName());
-//
-//
-//
-//            String Event_type = String.valueOf(event.getEventType());
-//            String Data_str =   "~NewEvent:event_info^" + Pack_name + "*" + Event_type +"^data^"+ "^text:" + Text + "^text:" + Content_Desc + "^event_time^"+ str_ty;
-////            Log.e("SINGLE ELEMENT*1 ", Data_str);
-//            Log.e("new_string_click", Data_str);
-//
-//
-//            fw.writeFile(Data_str, s2, c, dir);
-//        }
+
 
             if (source != null) {
                 AccessibilityNodeInfo rowNode = AccessibilityNodeInfo.obtain(source);
@@ -212,26 +191,13 @@ public class Access_new extends AccessibilityService {
                     String str_ty = c.get(Calendar.YEAR) + "-" + String.valueOf(c.get(Calendar.MONTH) + 1) + "-" + c.get(Calendar.DATE) + ":" + c.get(Calendar.HOUR_OF_DAY) + ":" + c.get(Calendar.MINUTE) + ":" + c.get(Calendar.SECOND) + ":" + c.get(Calendar.MILLISECOND);
                     String Pack_name = String.valueOf(rowNode.getPackageName());
                     String Event_type = String.valueOf(event.getEventType());
-                    String event_str = "~NewEvent:event_info^" + Pack_name + "*" + Event_type + "^data^";
+                    String event_str = "~NewEvent:event_info^" + Pack_name + "*" + Event_type + "^data^" + rowNode.getClassName() + "^data^";
                     Log.e("new_string", event_str);
-                    fw.writeFile(event_str, s2, c, dir);
-//                String Data_str = "~NewEvent:" + scscscsc"event_info^" + Pack_name + "*" + Class_name + "*" + Event_type + "^text^" + Text + "^description^" + Content_Desc + "^event_time^" + str_ty;
-//                Log.e("SINGLE ELEMENT ", Data_str);
+                    a = fw.writeFile(event_str, s2, c, dir, counter, true);
+                    counter = a;
                     /////////////////////
                     int count = rowNode.getChildCount();
-//                if (count== 0) {
-//                    String Text = String.valueOf(rowNode.getText());
-//                    String Content_Desc = String.valueOf(rowNode.getContentDescription());
-//                    String text = "";
-//                    if(Text!="null"){
-//                        text += "^text:" + Text;
-//                    }
-//                    if(Content_Desc!="null"){
-//                        text += "^text:" + Content_Desc;
-//                    }
-//                    Log.e("new_string", text);
-//                    fw.writeFile(text, s2,c, dir);
-//                } else {
+//
                     for (int i = 0; i < count; i++) {
                         AccessibilityNodeInfo completeNode = rowNode.getChild(i);
                         recur(completeNode, c, event);
@@ -241,17 +207,55 @@ public class Access_new extends AccessibilityService {
 
                     String event_end = "^event_time^" + str_ty;
                     Log.e("new_string_end", event_end);
-                    fw.writeFile(event_end, s2, c, dir);
+                    a = fw.writeFile(event_end, s2, c, dir, counter, false);
+                    counter = a;
                 }
-
             }
         }
         frw.RWFile(c, dir, s2);
         fs.sender(abt, dir, c, isCharging, net, s2);
-
-
     }
 
+    ////Actual Recurtion class to obtain deepest branch/node of parent node///
+    private void recur(AccessibilityNodeInfo completeNode, Calendar c, AccessibilityEvent event) {
+        if (completeNode != null) {
+            int cout = completeNode.getChildCount();
+            try {
+                if (cout == 0) {
+
+                    String Text = String.valueOf(completeNode.getText());
+                    String Content_Desc = String.valueOf(completeNode.getContentDescription());
+                    String text = "";
+                    if (Text != "null" && Text != "") {
+                        text += "^text:" + Text;
+                    }
+                    if (Content_Desc != "null" && Content_Desc != "") {
+                        text += "^text:" + Content_Desc;
+                    }
+                    if (text != "") {
+                        Log.e("new_string..", text);
+                        int a = fw.writeFile(text, s2, c, dir, counter, false);
+                        counter = a;
+                    }
+
+
+                } else {
+
+
+                    for (int i = 0; i < cout; i++) {
+                        AccessibilityEvent ev = event;
+                        AccessibilityNodeInfo completeNod = completeNode.getChild(i);
+                        recur(completeNod, c, ev);
+                    }
+                }
+
+            } catch (Exception e) {
+                Log.e("exp", e.getMessage());
+
+            }
+        }
+
+    }
 
     public void usedata(Calendar c) {
         installedApps = getInstalledApps();
@@ -277,62 +281,6 @@ public class Access_new extends AccessibilityService {
 
 
         myEdit.apply();
-    }
-
-
-    ////Actual Recurtion class to obtain deepest branch/node of parent node///
-    private void recur(AccessibilityNodeInfo completeNode, Calendar c, AccessibilityEvent event) {
-        if (completeNode != null) {
-            int cout = completeNode.getChildCount();
-            try {
-                if (cout == 0) {
-
-                    String Text = String.valueOf(completeNode.getText());
-                    String Content_Desc = String.valueOf(completeNode.getContentDescription());
-                    String text = "";
-                    if (Text != "null" && Text != "") {
-                        text += "^text:" + Text;
-                    }
-                    if (Content_Desc != "null" && Content_Desc != "") {
-                        text += "^text:" + Content_Desc;
-                    }
-                    if (text != "") {
-                        Log.e("new_string..", text);
-                        fw.writeFile(text, s2, c, dir);
-                    }
-
-
-//                    if((Text!="null")||(Content_Desc!="null")) {
-//                        String str_ty = c.get(Calendar.YEAR) + "-" + String.valueOf(c.get(Calendar.MONTH) + 1) + "-" + c.get(Calendar.DATE) + ":" + c.get(Calendar.HOUR_OF_DAY) + ":" + c.get(Calendar.MINUTE) + ":" + c.get(Calendar.SECOND) + ":" + c.get(Calendar.MILLISECOND);
-//
-//                        String Pack_name = String.valueOf(completeNode.getPackageName());
-//
-//                        String Class_name = String.valueOf(completeNode.getClassName());
-//
-//                        String Event_type = String.valueOf(event.getEventType());
-//
-//                        String Data_str = "~NewEvent:" + "event_info^" + Pack_name + "*" + Class_name + "*" + Event_type + "^text^" + Text + "^description^" + Content_Desc + "^event_time^" + str_ty;
-//                        Log.e("SINGLE ELEMENT ", Data_str);
-//                         fw.writeFile(Data_str, s2,c, dir);
-//                        Data_str = "";
-//
-//                    }
-                } else {
-
-
-                    for (int i = 0; i < cout; i++) {
-                        AccessibilityEvent ev=event;
-                        AccessibilityNodeInfo completeNod = completeNode.getChild(i);
-                        recur(completeNod, c, ev);
-                    }
-                }
-
-            } catch (Exception e) {
-                Log.e("exp", e.getMessage());
-
-            }
-        }
-
     }
 
 
@@ -407,18 +355,6 @@ public class Access_new extends AccessibilityService {
         Log.e(TAG, "onServiceConnected: ");
 
 
-
-//
-//        AccessibilityServiceInfo info = new AccessibilityServiceInfo();
-//        info.eventTypes = AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED | AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED;
-//        info.packageNames = appl.toArray(appslist);
-//        info.feedbackType = AccessibilityServiceInfo.FEEDBACK_ALL_MASK;
-//        info.flags = AccessibilityServiceInfo.FLAG_INCLUDE_NOT_IMPORTANT_VIEWS | AccessibilityServiceInfo.DEFAULT;
-////        info.notificationTimeout = 2000;
-//        this.setServiceInfo(info);
-//
-//
-//        Log.e(TAG, "onServiceConnected: ");
     }
 
 }
