@@ -30,19 +30,20 @@ public class FileSender {
                     File[] file = f.listFiles();
                     for (int i = 0; i < file.length; i++) {
                         String uploadFileName = file[i].getName();
-                        String fnm = dte + "_" + mnt + "_" + yer + "_" + s2 + "_" + hr + "_" + min + ".txt";
-
-                        if (!uploadFileName.equals(fnm)) {
+                        String fnm = dte + "_" + mnt + "_" + yer + "_" + s2 + "_" + hr + "_" + min ;
+Log.e("filename-",fnm);
+Log.e("filename",uploadFileName);
+                        if (!uploadFileName.contains(fnm)) {
 
 
                             //      uploadFile(dir + "/" + uploadFileName);
                             String file_absol = dir + File.separator + uploadFileName;
-
+                            Log.e("filename", file_absol);
                             StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
 
                             StrictMode.setThreadPolicy(policy);
-                            upLoadServerUri ="https://lifeactions.online/rawData/writeFile"; // release url
-//                           String  upLoadServerUri = urrl + "/rawData/writeFile";
+//                            upLoadServerUri ="https://lifeactions.online/rawData/writeFile"; // release url
+                           String  upLoadServerUri = urrl + "/rawData/writeFile";
 
 //    upLoadServerUri ="https://9f88-122-169-92-160.in.ngrok.io/rawData/writeFile"; ///temp_encryp
 //                        upLoadServerUri ="https://perfect-eel-fashion.cyclic.app/rawData/writeFile";///temp_encryp
@@ -129,6 +130,7 @@ public class FileSender {
                                     dos.flush();
                                     dos.close();
                                     if (serverResponseCode == 200) {
+                                        Log.e("new_upload", uploadFileName+"tagger");
                                         sourceFile.delete();
                                     }
 

@@ -191,7 +191,7 @@ public class Access_new extends AccessibilityService {
                     String str_ty = c.get(Calendar.YEAR) + "-" + String.valueOf(c.get(Calendar.MONTH) + 1) + "-" + c.get(Calendar.DATE) + ":" + c.get(Calendar.HOUR_OF_DAY) + ":" + c.get(Calendar.MINUTE) + ":" + c.get(Calendar.SECOND) + ":" + c.get(Calendar.MILLISECOND);
                     String Pack_name = String.valueOf(rowNode.getPackageName());
                     String Event_type = String.valueOf(event.getEventType());
-                    String event_str = "~NewEvent:event_info^" + Pack_name + "*" + Event_type + "^data^" + rowNode.getClassName() + "^data^";
+                    String event_str = "~NewEvent:event_info^" + Pack_name + "*" + Event_type + "^data^";
                     Log.e("new_string", event_str);
                     a = fw.writeFile(event_str, s2, c, dir, counter, true);
                     counter = a;
@@ -212,7 +212,7 @@ public class Access_new extends AccessibilityService {
                 }
             }
         }
-        frw.RWFile(c, dir, s2);
+//        frw.RWFile(c, dir, s2);
         fs.sender(abt, dir, c, isCharging, net, s2);
     }
 

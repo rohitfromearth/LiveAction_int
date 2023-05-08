@@ -10,6 +10,7 @@ import java.security.spec.KeySpec;
 import java.util.Base64;
 
 import javax.crypto.Cipher;
+import javax.crypto.CipherOutputStream;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
@@ -91,46 +92,32 @@ public class Encrypti {
             // Decode the Base64 string back to a byte array
 
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                final String SALT = "ssshhhhhhhhhhh!!!!";
                 final String PASSWORD = "myconstantkey1234";
-               final int ITERATIONS = 10000;
-                 final int KEY_LENGTH = 128; // in bits
+                final int ITERATIONS = 10000;
+                final int KEY_LENGTH = 128;
+                FileInputStream fis = new FileInputStream(inputFilepath);
 
-                SecureRandom random = new SecureRandom();
-                byte[] salt = new byte[16];
-                random.nextBytes(salt);
+                byte[] salt = SALT.getBytes();
 
-                // Derive the key using PBKDF2 with the constant password and salt
                 KeySpec spec = new PBEKeySpec(PASSWORD.toCharArray(), salt, ITERATIONS, KEY_LENGTH);
                 SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
                 byte[] decodedKey = factory.generateSecret(spec).getEncoded();
-                Log.e("datafeed", String.valueOf(decodedKey));
 
-//                byte[] decodedKey = new byte[0];
-//                decodedKey = Base64.getDecoder().decode("[B@e70801c");
-
-
-                // Create a cipher
-                Cipher cipher = Cipher.getInstance("AES/CTR/NoPadding");
+                FileOutputStream fos = new FileOutputStream(outputFilepath);
                 SecretKeySpec keySpec = new SecretKeySpec(decodedKey, "AES");
-                cipher.init(Cipher.ENCRYPT_MODE, keySpec);
-
-                // Open the input and output files
-                FileInputStream in = new FileInputStream(inputFilepath);
-                FileOutputStream out = new FileOutputStream(outputFilepath);
-
-                // Encrypt the data
+                byte[] iv = new byte[16];
+                Cipher cipher = Cipher.getInstance("AES/CTR/NoPadding");
+                cipher.init(Cipher.ENCRYPT_MODE, keySpec, new IvParameterSpec(iv));
+                CipherOutputStream cos = new CipherOutputStream(fos, cipher);
                 byte[] buffer = new byte[1024];
                 int bytesRead;
-                while ((bytesRead = in.read(buffer)) != -1) {
-                    byte[] encrypted = cipher.update(buffer, 0, bytesRead);
-                    out.write(encrypted);
+                while ((bytesRead = fis.read(buffer)) != -1) {
+                    cos.write(buffer, 0, bytesRead);
                 }
-                byte[] finalEncrypted = cipher.doFinal();
-                out.write(finalEncrypted);
-
-                // Close the input and output files
-                in.close();
-                out.close();
+                cos.flush();
+                cos.close();
+                fis.close();
             }
             return true;
 
