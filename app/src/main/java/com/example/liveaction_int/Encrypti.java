@@ -72,20 +72,6 @@ public class Encrypti {
     public Boolean encryptFile(String inputFilepath, String outputFilepath) {
         try {
 
-//            KeyGenerator keyGen = KeyGenerator.getInstance("AES");
-//            keyGen.init(128);
-//            SecretKey key = keyGen.generateKey();
-//
-//            // Get the raw bytes of the key
-//            final byte[] KEY  = key.getEncoded();
-//            Log.e("datafeed", String.valueOf(KEY));
-
-
-// Convert the key to Base64 encoding
-//            String encodedKey = null;
-//            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-//                encodedKey = Base64.getEncoder().encodeToString(rawKey);
-//            }
 
 // Transmit the encodedKey to your client
 
