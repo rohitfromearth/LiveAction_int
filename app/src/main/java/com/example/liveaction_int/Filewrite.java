@@ -10,7 +10,7 @@ import java.util.Calendar;
 public class Filewrite {
     Encrypti er;
 
-    public int writeFile(String data_str, String userid, Calendar c, String dir,int counter, boolean isNewEvent) {
+    public int writeFile(String data_str,int userid, Calendar c, String dir,int counter, boolean isNewEvent) {
         String dte = String.valueOf(c.get(Calendar.DATE));
         String mnt = String.valueOf(c.get(Calendar.MONTH) + 1);
         String yer = String.valueOf(c.get(Calendar.YEAR));
@@ -51,7 +51,7 @@ public class Filewrite {
         return counter;
     }
 
-    public void writedata(String devicedata, Calendar cal, String dir, String s2) {
+    public void writedata(String devicedata, Calendar cal, String dir, int s2) {
         String dte = String.valueOf(cal.get(Calendar.DATE));
         String mnt = String.valueOf(cal.get(Calendar.MONTH) + 1);
         String yer = String.valueOf(cal.get(Calendar.YEAR));

@@ -78,32 +78,56 @@ public class Encrypti {
             // Decode the Base64 string back to a byte array
 
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                final String SALT = "ssshhhhhhhhhhh!!!!";
-                final String PASSWORD = "myconstantkey1234";
-                final int ITERATIONS = 10000;
-                final int KEY_LENGTH = 128;
-                FileInputStream fis = new FileInputStream(inputFilepath);
+  final String KEY = "0123456789abcdef"; // 16-byte key (128-bit)
+         final String IV = "abcdef0123456789";
 
-                byte[] salt = SALT.getBytes();
+                SecretKeySpec secretKeySpec = new SecretKeySpec(KEY.getBytes(), "AES");
+                IvParameterSpec ivParameterSpec = new IvParameterSpec(IV.getBytes());
 
-                KeySpec spec = new PBEKeySpec(PASSWORD.toCharArray(), salt, ITERATIONS, KEY_LENGTH);
-                SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
-                byte[] decodedKey = factory.generateSecret(spec).getEncoded();
+                Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+                cipher.init(Cipher.ENCRYPT_MODE, secretKeySpec, ivParameterSpec);
 
-                FileOutputStream fos = new FileOutputStream(outputFilepath);
-                SecretKeySpec keySpec = new SecretKeySpec(decodedKey, "AES");
-                byte[] iv = new byte[16];
-                Cipher cipher = Cipher.getInstance("AES/CTR/NoPadding");
-                cipher.init(Cipher.ENCRYPT_MODE, keySpec, new IvParameterSpec(iv));
-                CipherOutputStream cos = new CipherOutputStream(fos, cipher);
-                byte[] buffer = new byte[1024];
+                FileInputStream inputStream = new FileInputStream(inputFilepath);
+                FileOutputStream outputStream = new FileOutputStream(outputFilepath);
+                CipherOutputStream cipherOutputStream = new CipherOutputStream(outputStream, cipher);
+
+                byte[] buffer = new byte[8192];
                 int bytesRead;
-                while ((bytesRead = fis.read(buffer)) != -1) {
-                    cos.write(buffer, 0, bytesRead);
+                while ((bytesRead = inputStream.read(buffer)) != -1) {
+                    cipherOutputStream.write(buffer, 0, bytesRead);
                 }
-                cos.flush();
-                cos.close();
-                fis.close();
+
+                cipherOutputStream.close();
+                outputStream.close();
+                inputStream.close();
+
+
+//                final String SALT = "ssshhhhhhhhhhh!!!!";
+//                final String PASSWORD = "myconstantkey1234";
+//                final int ITERATIONS = 10000;
+//                final int KEY_LENGTH = 128;
+//                FileInputStream fis = new FileInputStream(inputFilepath);
+//
+//                byte[] salt = SALT.getBytes();
+//
+//                KeySpec spec = new PBEKeySpec(PASSWORD.toCharArray(), salt, ITERATIONS, KEY_LENGTH);
+//                SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
+//                byte[] decodedKey = factory.generateSecret(spec).getEncoded();
+//
+//                FileOutputStream fos = new FileOutputStream(outputFilepath);
+//                SecretKeySpec keySpec = new SecretKeySpec(decodedKey, "AES");
+//                byte[] iv = new byte[16];
+//                Cipher cipher = Cipher.getInstance("AES/CTR/NoPadding");
+//                cipher.init(Cipher.ENCRYPT_MODE, keySpec, new IvParameterSpec(iv));
+//                CipherOutputStream cos = new CipherOutputStream(fos, cipher);
+//                byte[] buffer = new byte[1024];
+//                int bytesRead;
+//                while ((bytesRead = fis.read(buffer)) != -1) {
+//                    cos.write(buffer, 0, bytesRead);
+//                }
+//                cos.flush();
+//                cos.close();
+//                fis.close();
             }
             return true;
 

@@ -59,10 +59,12 @@ import java.util.concurrent.Executor;
 import javax.net.ssl.HttpsURLConnection;
 
 public class Access_new extends AccessibilityService {
-    String s2 = ""; // for shared pref
+  int s2=0 ;
+  // for shared pref
+  int uid_z;
     String dir = "";
     String Adid = "";/// for shared pref
-    String Google_AAID = "";
+
     private int previousSecond = -1;
     int executiondateInt;
     int dte;
@@ -92,7 +94,7 @@ public class Access_new extends AccessibilityService {
             public void run() {
                 try {
                     AdvertisingIdClient.Info adInfo = AdvertisingIdClient.getAdvertisingIdInfo(getApplicationContext());
-                    String adId = adInfo != null ? adInfo.getId() : null;
+                    String adId = adInfo.getId();
                     Log.e("advertising id", adId);
 
                     SharedPreferences sharedPreferences = getSharedPreferences("MySharedPref", MODE_PRIVATE);
@@ -158,7 +160,7 @@ public class Access_new extends AccessibilityService {
         int second = c.get(Calendar.SECOND);
         /////// input of shared pref - userid, dir, api endpoint//////
         SharedPreferences sh = getSharedPreferences("MySharedPref", MODE_PRIVATE);
-        s2 = sh.getString("Userid", "");
+        s2 = sh.getInt("UID", uid_z);
         dir = sh.getString("dir", "");
         abt = sh.getString("endpt", "");
         executiondateInt = sh.getInt("executiondate", 0);
@@ -212,7 +214,7 @@ public class Access_new extends AccessibilityService {
                 }
             }
         }
-//        frw.RWFile(c, dir, s2);
+        frw.RWFile(c, dir, s2);
         fs.sender(abt, dir, c, isCharging, net, s2);
     }
 

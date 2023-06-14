@@ -15,7 +15,7 @@ public class FileWriteRead {
 
     Encrypti er;
 
-    public void RWFile(Calendar c, String dir, String s2) {
+    public void RWFile(Calendar c, String dir, int s2) {
         er = new Encrypti();
         String dte = String.valueOf(c.get(Calendar.DATE));
         String mnt = String.valueOf(c.get(Calendar.MONTH) + 1);

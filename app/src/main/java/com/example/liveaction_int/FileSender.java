@@ -15,7 +15,7 @@ import java.util.Calendar;
 public class FileSender {
     int serverResponseCode = 0;
     String upLoadServerUri = null;
-    public void sender(String urrl, String dir , Calendar c, boolean charging, NetworkInfo netInfo,String s2){
+    public void sender(String urrl, String dir , Calendar c, boolean charging, NetworkInfo netInfo,int s2){
         String dte = String.valueOf(c.get(Calendar.DATE));
         String mnt = String.valueOf(c.get(Calendar.MONTH) + 1);
         String yer = String.valueOf(c.get(Calendar.YEAR));
@@ -32,7 +32,7 @@ public class FileSender {
                         String uploadFileName = file[i].getName();
                         String fnm = dte + "_" + mnt + "_" + yer + "_" + s2 + "_" + hr + "_" + min ;
 Log.e("filename-",fnm);
-Log.e("filename",uploadFileName);
+Log.e("filenam",uploadFileName);
                         if (!uploadFileName.contains(fnm)) {
 
 
@@ -42,15 +42,8 @@ Log.e("filename",uploadFileName);
                             StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
 
                             StrictMode.setThreadPolicy(policy);
-//                            upLoadServerUri ="https://lifeactions.online/rawData/writeFile"; // release url
-                           String  upLoadServerUri = urrl + "/rawData/writeFile";
-
-//    upLoadServerUri ="https://9f88-122-169-92-160.in.ngrok.io/rawData/writeFile"; ///temp_encryp
-//                        upLoadServerUri ="https://perfect-eel-fashion.cyclic.app/rawData/writeFile";///temp_encryp
-
-                            //upLoadServerUri = "https://perfect-eel-fashion.cyclic.app/rawData/writeFile"; //original dont touch
-
-                            //upLoadServerUri = "https://689e-122-169-93-39.in.ngrok.io/rawData/writeFile";//temp
+                            upLoadServerUri ="https://lifeactions.online/rawData/writeFile"; // release url
+//                           String  upLoadServerUri = urrl + "/rawData/writeFile";
 
 
                             HttpURLConnection conn = null;
@@ -60,9 +53,9 @@ Log.e("filename",uploadFileName);
                             String boundary = "*****";
                             int bytesRead, bytesAvailable, bufferSize;
                             byte[] buffer;
-                            int maxBufferSize = 1 * 1024 * 1024;
+                            int maxBufferSize = 1024 * 1024;
                             File sourceFile = new File(file_absol);
-
+String s2_s= String.valueOf(s2);
                             if (!sourceFile.isFile()) {
 
                             } else {
@@ -83,7 +76,7 @@ Log.e("filename",uploadFileName);
                                     conn.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + boundary);
                                     conn.setRequestProperty("file", file_absol);
                                     conn.setRequestProperty("ultra", "45");///new
-                                    conn.setRequestProperty("userId", s2);//// userid
+                                    conn.setRequestProperty("userId", s2_s);//// userid
 
 
                                     dos = new DataOutputStream(conn.getOutputStream());
