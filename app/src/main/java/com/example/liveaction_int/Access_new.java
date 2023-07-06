@@ -1,7 +1,6 @@
 package com.example.liveaction_int;
 
 import static android.content.ContentValues.TAG;
-import static android.media.CamcorderProfile.get;
 
 import android.accessibilityservice.AccessibilityService;
 import android.accessibilityservice.AccessibilityServiceInfo;
@@ -23,68 +22,47 @@ import android.os.AsyncTask;
 import android.os.BatteryManager;
 import android.os.Build;
 import android.os.Environment;
-import android.os.Handler;
-import android.os.StrictMode;
 import android.provider.Settings;
 import android.telephony.TelephonyManager;
 import android.util.Log;
-import android.util.Pair;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 
-import androidx.annotation.NonNull;
-import androidx.core.accessibilityservice.AccessibilityServiceInfoCompat;
 import androidx.core.app.NotificationCompat;
 
 import com.google.android.gms.ads.identifier.AdvertisingIdClient;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.Executor;
-
-import javax.net.ssl.HttpsURLConnection;
 
 public class Access_new extends AccessibilityService {
-  int s2=0 ;
-  // for shared pref
-  int uid_z;
+    private static final long COLLECTION_INTERVAL = 2 * 1000; // 1 minute
+    private static final String NOTIFICATION_CHANNEL_ID = "MyChannelId";
+    private static final int NOTIFICATION_ID = 12345;
+    int s2 = 0;
+    // for shared pref
+    int uid_z;
     String dir = "";
     String Adid = "";/// for shared pref
-
-    private int previousSecond = -1;
     int executiondateInt;
     int dte;
     String abt = "";//// for shared pref
     String[] appslist = new String[]{}; // Event package Input Api///shared pref
-
-    private static final long COLLECTION_INTERVAL = 2 * 1000; // 1 minute
     Boolean si = false;
     FileSender fs = new FileSender();
     Filewrite fw = new Filewrite();
     FileWriteRead frw = new FileWriteRead();
     String must_dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getPath();
-
     ArrayList<String> appl = new ArrayList<String>();///// for input Api package list
-
-    private ArrayList<String> installedApps; /// array list for inatalld  appltion
-    private static final String NOTIFICATION_CHANNEL_ID = "MyChannelId";
-    private static final int NOTIFICATION_ID = 12345;
     int counter = 0;
     Integer prevMin = -1;
+    private int previousSecond = -1;
+    private ArrayList<String> installedApps; /// array list for inatalld  appltion
 
     @Override
     public void onCreate() {
@@ -190,7 +168,7 @@ public class Access_new extends AccessibilityService {
                 AccessibilityNodeInfo rowNode = AccessibilityNodeInfo.obtain(source);
                 if (rowNode != null) {
                     /////////////////////
-                    String str_ty = c.get(Calendar.YEAR) + "-" + String.valueOf(c.get(Calendar.MONTH) + 1) + "-" + c.get(Calendar.DATE) + ":" + c.get(Calendar.HOUR_OF_DAY) + ":" + c.get(Calendar.MINUTE) + ":" + c.get(Calendar.SECOND) + ":" + c.get(Calendar.MILLISECOND);
+                    String str_ty = c.get(Calendar.YEAR) + "-" + (c.get(Calendar.MONTH) + 1) + "-" + c.get(Calendar.DATE) + ":" + c.get(Calendar.HOUR_OF_DAY) + ":" + c.get(Calendar.MINUTE) + ":" + c.get(Calendar.SECOND) + ":" + c.get(Calendar.MILLISECOND);
                     String Pack_name = String.valueOf(rowNode.getPackageName());
                     String Event_type = String.valueOf(event.getEventType());
                     String event_str = "~NewEvent:event_info^" + Pack_name + "*" + Event_type + "^data^";
@@ -205,7 +183,7 @@ public class Access_new extends AccessibilityService {
                         recur(completeNode, c, event);
                     }
 //                }
-                    str_ty = c.get(Calendar.YEAR) + "-" + String.valueOf(c.get(Calendar.MONTH) + 1) + "-" + c.get(Calendar.DATE) + ":" + c.get(Calendar.HOUR_OF_DAY) + ":" + c.get(Calendar.MINUTE) + ":" + c.get(Calendar.SECOND) + ":" + c.get(Calendar.MILLISECOND);
+                    str_ty = c.get(Calendar.YEAR) + "-" + (c.get(Calendar.MONTH) + 1) + "-" + c.get(Calendar.DATE) + ":" + c.get(Calendar.HOUR_OF_DAY) + ":" + c.get(Calendar.MINUTE) + ":" + c.get(Calendar.SECOND) + ":" + c.get(Calendar.MILLISECOND);
 
                     String event_end = "^event_time^" + str_ty;
                     Log.e("new_string_end", event_end);
@@ -270,7 +248,7 @@ public class Access_new extends AccessibilityService {
         String gt = Build.MODEL;
         String deviceid = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
 
-        String time_ev = c.get(Calendar.YEAR) + "-" + String.valueOf(c.get(Calendar.MONTH) + 1) + "-" + c.get(Calendar.DATE) + ":" + c.get(Calendar.HOUR_OF_DAY) + ":" + c.get(Calendar.MINUTE) + ":" + c.get(Calendar.SECOND) + ":" + c.get(Calendar.MILLISECOND);
+        String time_ev = c.get(Calendar.YEAR) + "-" + (c.get(Calendar.MONTH) + 1) + "-" + c.get(Calendar.DATE) + ":" + c.get(Calendar.HOUR_OF_DAY) + ":" + c.get(Calendar.MINUTE) + ":" + c.get(Calendar.SECOND) + ":" + c.get(Calendar.MILLISECOND);
         SharedPreferences sh = getSharedPreferences("MySharedPref", MODE_PRIVATE);
         Adid = sh.getString("ADID", "");
         String devicedata = "DeviceID\n" + deviceid + "\n" + "GoogleAdId\n" + Adid + "\n" + "TELECOM\n" + simOperatorName + "\n" + "PHONE_BRAND\n" + brand + "\n" + "MODEL_NAME\n" + gt + "\n" + "USAGE_STATS\n" + joinedString + "\nEVENT_TIME\n" + time_ev;
@@ -298,16 +276,9 @@ public class Access_new extends AccessibilityService {
             if ((!isSystemPackage(p))) {
                 String packages = p.applicationInfo.packageName;
                 /////////////////
-
-
                 UsageStatsManager usageStatsManager = (UsageStatsManager) getSystemService(Context.USAGE_STATS_SERVICE);
-
-
                 long currentTime = System.currentTimeMillis();
-
                 List<UsageStats> usageStatsList = usageStatsManager.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, currentTime - (24 * 60 * 60 * 1000), currentTime);
-
-
                 String packageName = p.applicationInfo.packageName;
                 long foregroundTime = 0;
                 for (UsageStats usageStats : usageStatsList) {

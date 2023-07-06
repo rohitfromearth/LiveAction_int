@@ -27,15 +27,12 @@ public class Filewrite {
             File file = new File(dir + File.separator + dte + "_" + mnt + "_" + yer + "_" + userid + "_" + hr + "_" + min +"_"+counter+ ".txt");
             double fileSizeKB = (double) file.length() / 1024;
             System.out.println("File size in KB: " + fileSizeKB);
-            if (isNewEvent == true && fileSizeKB > 20) {
+            if (isNewEvent && fileSizeKB > 20) {
 
                 counter++;
                 Log.e("FileSizeChange" , String.valueOf(fileSizeKB));
                 wrt = new FileWriter(dir + File.separator + dte + "_" + mnt + "_" + yer + "_" + userid + "_" + hr + "_" + min +"_"+counter+ ".txt", true);
             }
-
-
-
 
 //            wrt.append(encryptedString + "^^^");
             wrt.append(data_str);

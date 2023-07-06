@@ -44,21 +44,16 @@ public class FileWriteRead {
                     //////new encrypt implementation 28- april///
                     File dataFile = new File(downloadFolder, uploadFileName);
                     String filePath = dir + File.separator + uploadFileName;
-
                     String outfilePath= dir + File.separator + "ecr" + uploadFileName;
                   Boolean value = er.encryptFile(filePath, outfilePath);
                     if (value){
                         dataFile.delete();
                     }
 ///////////////////////////////////////////
-
-
-
 //                    File dataFile = new File(downloadFolder, uploadFileName);
 //                    String dassh = readFile(dataFile);
 //                    Log.e("marer", dassh);
 //                    if (dassh != null) {
-//
 //                        String enrcyp = er.enrycpp(dassh);
 //                        try {
 //                            FileWriter wrt = new FileWriter(dir + File.separator + "ecr" + uploadFileName, true);
@@ -79,8 +74,6 @@ public class FileWriteRead {
             Log.e("WRFIlelog", String.valueOf(e));
             throw new RuntimeException(e);
         }
-
-
     }
 
     public String readFile(File dataFile) {
