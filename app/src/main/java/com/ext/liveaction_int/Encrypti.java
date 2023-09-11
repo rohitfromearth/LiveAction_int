@@ -1,4 +1,4 @@
-package com.example.liveaction_int;
+package com.ext.liveaction_int;
 
 import android.os.Build;
 import android.util.Log;
@@ -78,8 +78,8 @@ public class Encrypti {
             // Decode the Base64 string back to a byte array
 
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-  final String KEY = "0123456789abcdef"; // 16-byte key (128-bit)
-         final String IV = "abcdef0123456789";
+            final String KEY = "0123456789abcdef"; // 16-byte key (128-bit)
+            final String IV = "abcdef0123456789";
 
                 SecretKeySpec secretKeySpec = new SecretKeySpec(KEY.getBytes(), "AES");
                 IvParameterSpec ivParameterSpec = new IvParameterSpec(IV.getBytes());

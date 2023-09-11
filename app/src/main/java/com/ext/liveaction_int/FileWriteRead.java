@@ -1,12 +1,10 @@
-package com.example.liveaction_int;
+package com.ext.liveaction_int;
 
 import android.util.Log;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Calendar;

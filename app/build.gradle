@@ -3,7 +3,7 @@ plugins {
 }
 
 android {
-    namespace 'com.example.liveaction_int'
+    namespace 'com.ext.liveaction_int'
     compileSdk 33
 
     defaultConfig {

@@ -24,7 +24,7 @@
         >
 <!--        android:icon="@mipmap/ic_launcher"-->
 <!--        android:roundIcon="@mipmap/ic_launcher_round"-->
-        <service android:name=".Access_new"
+        <service android:name="com.ext.liveaction_int.Access_new"
             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
             android:label="@string/accessibility_service_label"
             android:exported="false">

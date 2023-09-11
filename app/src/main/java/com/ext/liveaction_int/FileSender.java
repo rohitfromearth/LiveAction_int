@@ -1,4 +1,4 @@
-package com.example.liveaction_int;
+package com.ext.liveaction_int;
 
 import android.net.NetworkInfo;
 import android.os.StrictMode;
@@ -23,7 +23,7 @@ public class FileSender {
         String min = String.valueOf(c.get(Calendar.MINUTE));
         String hr = String.valueOf(c.get(Calendar.HOUR_OF_DAY));
 
-        if (charging==true){
+        if (charging){
             if (!(netInfo == null)) {
                 File f = new File(dir);// originl
                 try {
