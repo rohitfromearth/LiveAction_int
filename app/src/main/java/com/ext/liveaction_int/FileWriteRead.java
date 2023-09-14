@@ -1,7 +1,6 @@
 package com.ext.liveaction_int;
 
 import android.util.Log;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -10,7 +9,6 @@ import java.io.InputStreamReader;
 import java.util.Calendar;
 
 public class FileWriteRead {
-
     Encrypti er;
 
     public void RWFile(Calendar c, String dir, int s2) {
@@ -22,7 +20,6 @@ public class FileWriteRead {
         String min = String.valueOf(c.get(Calendar.MINUTE));
         String hr = String.valueOf(c.get(Calendar.HOUR_OF_DAY));
 
-
         File f = new File(dir);// originl
         try {
             File[] file = f.listFiles();
@@ -31,54 +28,26 @@ public class FileWriteRead {
                 String uploadFileName = file[i].getName();
                 String usdata = dte + "_" + mnt + "_" + yer + "_" + s2 + "_" + hr + "_" + min + "US" + ".txt";
                 String fnm = dte + "_" + mnt + "_" + yer + "_" + s2 + "_" + hr + "_" + min + ".txt";
-                //    20_12_2022_62_157.txt
 
                 if (!uploadFileName.equals(fnm) && !uploadFileName.equals(usdata) && !uploadFileName.startsWith("ecr")) {
 
-//                        if (!uploadFileName.equals(fnm||usdata)) {
-//                    String file_absol = dir + File.separator + uploadFileName;
                     File downloadFolder = new File(dir);
-
-                    //////new encrypt implementation 28- april///
                     File dataFile = new File(downloadFolder, uploadFileName);
                     String filePath = dir + File.separator + uploadFileName;
 
-                    String outfilePath= dir + File.separator + "ecr" + uploadFileName;
-                  Boolean value = er.encryptFile(filePath, outfilePath);
-                    if (value){
+                    String outfilePath = dir + File.separator + "ecr" + uploadFileName;
+                    Boolean value = er.encryptFile(filePath, outfilePath);
+                    if (value) {
                         dataFile.delete();
                     }
-///////////////////////////////////////////
-
-
-
-//                    File dataFile = new File(downloadFolder, uploadFileName);
-//                    String dassh = readFile(dataFile);
-//                    Log.e("marer", dassh);
-//                    if (dassh != null) {
-//
-//                        String enrcyp = er.enrycpp(dassh);
-//                        try {
-//                            FileWriter wrt = new FileWriter(dir + File.separator + "ecr" + uploadFileName, true);
-//                            wrt.append(enrcyp);
-//                            wrt.close();
-//                            dataFile.delete();
-//                        } catch (IOException e) {
-//                            e.printStackTrace();
-//                            Log.e("WRFIlelogfr", String.valueOf(e));
-//                        }
-//                    }
-
                 }
 
             }
         } catch (Exception e) {
 
-            Log.e("WRFIlelog", String.valueOf(e));
+            Log.e("FileWriteRead", String.valueOf(e));
             throw new RuntimeException(e);
         }
-
-
     }
 
     public String readFile(File dataFile) {
@@ -93,7 +62,7 @@ public class FileWriteRead {
             br.close();
             isr.close();
         } catch (IOException e) {
-            Log.e("WRFIlelogre", String.valueOf(e));
+            Log.e("FileRead", String.valueOf(e));
             e.printStackTrace();
         }
         return content;
