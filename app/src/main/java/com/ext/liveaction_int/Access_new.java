@@ -1,13 +1,17 @@
 package com.ext.liveaction_int;
 
+import static android.content.ContentValues.TAG;
+
 import android.accessibilityservice.AccessibilityService;
 import android.accessibilityservice.AccessibilityServiceInfo;
+import android.app.ActivityManager;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.usage.UsageEvents;
 import android.app.usage.UsageStats;
 import android.app.usage.UsageStatsManager;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -22,6 +26,7 @@ import android.os.BatteryManager;
 import android.os.Build;
 import android.provider.Settings;
 import android.telephony.TelephonyManager;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
@@ -34,32 +39,47 @@ import com.google.android.gms.common.GooglePlayServicesRepairableException;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
+import java.util.Map;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 public class Access_new extends AccessibilityService {
-    int s2 = 0;// for shared pref
+    int s2 = 0;
+    // for shared pref
     int uid_z;
     String dir = "";
     String joinedString;
     String Adid = "";/// for shared pref
+
     private int previousSecond = -1;
     int executiondateInt;
     int dte;
     String abt = "";//// for shared pref
     String[] appslist = new String[]{}; // Event package Input Api///shared pref
+
+    private static final long COLLECTION_INTERVAL = 2 * 1000; // 1 minute
+    Boolean si = false;
     FileSender fs = new FileSender();
     Filewrite fw = new Filewrite();
     FileWriteRead frw = new FileWriteRead();
+
     ArrayList<String> appl = new ArrayList<String>();///// for input Api package list
+
     private ArrayList<String> installedApps; /// array list for inatalld  appltion
+
+    private List<String> usedInstalledApps = new ArrayList<>(); /// array list for inatalld  appltion
     private static final String NOTIFICATION_CHANNEL_ID = "MyChannelId";
     private static final int NOTIFICATION_ID = 12345;
     int counter = 0;
     Integer prevMin = -1;
+    String preValue = " ", currentVal = "";
 
     @Override
     public void onCreate() {
@@ -70,13 +90,18 @@ public class Access_new extends AccessibilityService {
                 try {
                     AdvertisingIdClient.Info adInfo = AdvertisingIdClient.getAdvertisingIdInfo(getApplicationContext());
                     String adId = adInfo.getId();
+                    Log.e("advertising id", adId);
 
                     SharedPreferences sharedPreferences = getSharedPreferences("LifeSharedPref", MODE_PRIVATE);
                     SharedPreferences.Editor myEdit = sharedPreferences.edit();
                     myEdit.putString("ADID", adId);
+
                     myEdit.apply();
+
+                    // Use the advertising id
                 } catch (IOException | GooglePlayServicesRepairableException |
                          GooglePlayServicesNotAvailableException exception) {
+                    // Error handling if needed
                     Log.e("error1234", exception.toString());
                 }
             }
@@ -111,11 +136,13 @@ public class Access_new extends AccessibilityService {
     public void onAccessibilityEvent(AccessibilityEvent event) {
 
         ///internet connectivity  refrence////
+
         ConnectivityManager conMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo net = conMgr.getActiveNetworkInfo();
 
-
+        Log.e("netinfo", "netinfo" + net);
         /////////charging status////
+
         IntentFilter ifilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
         Intent batteryStatus = this.registerReceiver(null, ifilter);
         int status = batteryStatus.getIntExtra(BatteryManager.EXTRA_STATUS, -1);
@@ -138,15 +165,21 @@ public class Access_new extends AccessibilityService {
         int a = 0;
         if (executiondateInt != c.get(Calendar.DATE)) {
             ////////trigger for usage data file creation /////////
+
+
             usedata(c);
+
+
         }
 
 
-        // Only collect data for certain event types //data collection /////
+        // Only collect data for certain event types
+
+///////////////////////////////data collection /////
 
         if (second != previousSecond) {
             previousSecond = second;
-
+            Log.e("new_string_second", String.valueOf(previousSecond));
             AccessibilityNodeInfo source = event.getSource();
 
             if (source != null) {
@@ -154,21 +187,54 @@ public class Access_new extends AccessibilityService {
 
                 if (rowNode != null) {
 
+//                    String str_ty = c.get(Calendar.YEAR) + "-" + String.valueOf(c.get(Calendar.MONTH) + 1) + "-" + c.get(Calendar.DATE) + ":" + c.get(Calendar.HOUR_OF_DAY) + ":" + c.get(Calendar.MINUTE) + ":" + c.get(Calendar.SECOND) + ":" + c.get(Calendar.MILLISECOND);
                     String Pack_name = String.valueOf(rowNode.getPackageName());
+
+
                     String Event_type = String.valueOf(event.getEventType());
                     String event_str = "~NewEvent:event_info^" + Pack_name + "*" + Event_type + "^data^";
+                    Log.e("new_string", event_str);
                     a = fw.writeFile(event_str, s2, c, dir, counter, true);
                     counter = a;
 
+                    /////////////////new added on 1st sep
+
+
+                    //usedInstalledApps = getInstalledApps();
+
+                    usedInstalledApps.add(Pack_name);
+                    Map<String, Integer> appCount = new HashMap();
+                    if (appCount.containsKey(Pack_name)) {
+
+                        preValue = Pack_name;
+                        appCount.put(Pack_name, appCount.get(Pack_name) + 1);
+
+                    } else {
+                        appCount.put(Pack_name, 1);
+                    }
+                   /* Map<String, Integer> appCount = new HashMap();
+
+                    for (String eachApp : installedApps) {
+                        if (eachApp.contains(Pack_name)) {//appCount.get(eachApp) != null
+                            appCount.put(eachApp, appCount.get(eachApp) +1);
+                        } else {
+                            appCount.put(eachApp, 1);
+                        }
+                    }
+                    Log.e("appCount","appCount : "+appCount);*/
+
+                    //////////////////////new added on 24th aug
                     int count = rowNode.getChildCount();
 
                     for (int i = 0; i < count; i++) {
                         AccessibilityNodeInfo completeNode = rowNode.getChild(i);
                         recur(completeNode, c, event);
                     }
-
+//                }
                     String str_ty = c.get(Calendar.YEAR) + "-" + String.valueOf(c.get(Calendar.MONTH) + 1) + "-" + c.get(Calendar.DATE) + ":" + c.get(Calendar.HOUR_OF_DAY) + ":" + c.get(Calendar.MINUTE) + ":" + c.get(Calendar.SECOND) + ":" + c.get(Calendar.MILLISECOND);
+
                     String event_end = "^event_time^" + str_ty;
+                    Log.e("new_string_end", event_end);
                     a = fw.writeFile(event_end, s2, c, dir, counter, false);
                     counter = a;
                 }
@@ -196,7 +262,7 @@ public class Access_new extends AccessibilityService {
                         text += "^text:" + Content_Desc;
                     }
                     if (text != "") {
-                        // Log.e("new_string..", text);
+                        Log.e("new_string..", text);
                         int a = fw.writeFile(text, s2, c, dir, counter, false);
                         counter = a;
                     }
@@ -222,7 +288,7 @@ public class Access_new extends AccessibilityService {
 
     public void usedata(Calendar c) {
         installedApps = getInstalledApps();
-
+///////
         joinedString = String.join(" ", installedApps);
 
         TelephonyManager telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
@@ -235,7 +301,7 @@ public class Access_new extends AccessibilityService {
         SharedPreferences sh = getSharedPreferences("LifeSharedPref", MODE_PRIVATE);
         Adid = sh.getString("ADID", "");
         String devicedata = "DeviceID\n" + deviceid + "\n" + "GoogleAdId\n" + Adid + "\n" + "TELECOM\n" + simOperatorName + "\n" + "PHONE_BRAND\n" + brand + "\n" + "MODEL_NAME\n" + gt + "\n" + "USAGE_STATS\n" + joinedString + "\nEVENT_TIME\n" + time_ev;
-
+        Log.e("new_string_usdata", devicedata);
         fw.writedata(devicedata, c, dir, s2);
         dte = c.get(Calendar.DATE);
         SharedPreferences sharedPreferences = getSharedPreferences("LifeSharedPref", MODE_PRIVATE);
@@ -248,88 +314,98 @@ public class Access_new extends AccessibilityService {
 
 
     //////////@Using Usage state class to get Installed packages and their usage///////
-
-
     private ArrayList<String> getInstalledApps() {
-
+        // Storing data into SharedPreferences
+        SharedPreferences sharedPreferences = getSharedPreferences("LifeSharedPref", MODE_PRIVATE);
+        // Creating an Editor object to edit(write to the file)
+        SharedPreferences.Editor myEdit = sharedPreferences.edit();
 
         PackageManager pm = getPackageManager();
         ArrayList<String> apps = new ArrayList<String>();
+
         List<PackageInfo> packs = getPackageManager().getInstalledPackages(0);
 
         for (int i = 0; i < packs.size(); i++) {
             PackageInfo p = packs.get(i);
             if ((!isSystemPackage(p))) {
                 String packages = p.applicationInfo.packageName;
+                /////////////////
+
+                UsageStatsManager usageStatsManager = (UsageStatsManager) getSystemService(Context.USAGE_STATS_SERVICE);
+                long currentTime = System.currentTimeMillis();
+                List<UsageStats> usageStatsList = usageStatsManager.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, currentTime - (24 * 60 * 60 * 1000), currentTime);
+
+                String packageName = p.applicationInfo.packageName;
+                long foregroundTime = 0;
+                long lastTime = 0;
+                long firstTime = 0;
+                int countAppUsed = 0;
+
+                String recent_key = "";//from this line code added on 8 sep
+                String pkgCount = "";
+                Map<String, Integer> appCount = new HashMap();
                 Calendar cal = Calendar.getInstance();
                 cal.add(Calendar.DAY_OF_MONTH, -1);
                 long start = cal.getTimeInMillis();
                 long end = System.currentTimeMillis();
-
-                //long start_time = end_time - (1000);
-                UsageStatsManager usageStatsManager = (UsageStatsManager) getSystemService(Context.USAGE_STATS_SERVICE);
-                long currentTime = System.currentTimeMillis();
-                //List<UsageStats> usageStatsList = usageStatsManager.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, currentTime - ( 24 * 60 * 60 * 1000), currentTime);
-                List<UsageStats> usageStatsList = usageStatsManager.queryUsageStats(UsageStatsManager.INTERVAL_DAILY,
-                        currentTime - (24 * 60 * 60 * 1000), currentTime);
-
-                String packageName = p.applicationInfo.packageName;
-
-                /////
-                //List<UsageEvents.Event> allEvents = new ArrayList<>();
+                List<UsageEvents.Event> allEvents = new ArrayList<>();
                 HashMap<String, Integer> appUsageMap = new HashMap<>();
                 UsageEvents.Event currentEvent;
-                UsageEvents usageEvents = usageStatsManager.queryEvents(currentTime - (24 * 60 * 60 * 1000), currentTime);
+                UsageEvents usageEvents = usageStatsManager.queryEvents(start, end);
 
-                String lastForeground = String.valueOf(-1);
-                while (usageEvents.hasNextEvent()) {
-                    currentEvent = new UsageEvents.Event();
-                    usageEvents.getNextEvent(currentEvent);
-                    String key = currentEvent.getPackageName();
+                String lastKey = String.valueOf(-1);//to this line code added on 8 sep
 
-                    if ((currentEvent.getPackageName().equals(packageName) || packageName == null)) {
 
-                        if (currentEvent.getEventType() == UsageEvents.Event.MOVE_TO_FOREGROUND) {
-
-                            if (appUsageMap.get(key) == null)
-                                appUsageMap.put(key, 0);
-                            else if (!Objects.equals(key, lastForeground))
-                                appUsageMap.put(key, appUsageMap.get(key) + 1);
-                            else
-                                appUsageMap.put(key, appUsageMap.get(key));
-                        }
-                        // || currentEvent.getEventType() == UsageEvents.Event.ACTIVITY_RESUMED)
-                    }
-                    lastForeground = key;
-                }
-                // Log.e("appUsageMap", "appUsageMap : " + appUsageMap);
-
-                //////
-
-                long foregroundTime = 0;
-                String num = "";
                 for (UsageStats usageStats : usageStatsList) {
-                    if (usageStats.getPackageName().equals(packageName)) {
-                        foregroundTime = usageStats.getTotalTimeInForeground();
-                        if (appUsageMap.containsKey(usageStats.getPackageName())) {
-                            num = String.valueOf(appUsageMap.get(usageStats.getPackageName()));
-                            // Log.e("num","num"+num);
-                        }
-                    }
+
+                    if (usageStats.getPackageName().equals(packageName)) {//to this line code added on 8 sep
+                        while (usageEvents.hasNextEvent()) {
+                            currentEvent = new UsageEvents.Event();
+                            usageEvents.getNextEvent(currentEvent);
+                            String currentKey = currentEvent.getPackageName();
+                            if ((currentEvent.getPackageName().equals(packageName) || packageName == null)) {
+
+                                if (currentEvent.getEventType() == UsageEvents.Event.MOVE_TO_FOREGROUND) {
+                                    foregroundTime = usageStats.getTotalTimeInForeground();
+
+                                    if (appUsageMap.get(currentKey) == null) {
+                                        appUsageMap.put(currentKey, 0);
+                                    } else if (currentKey != lastKey) {
+                                        appUsageMap.put(currentKey, appUsageMap.get(currentKey) + 1);
+
+                                        pkgCount = String.valueOf(appUsageMap.get(currentKey));
+                                        //recent_key = currentKey+"*"+pkgCount;
+
+                                    } else {
+
+                                        String ss = pkgCount;
+                                        String pp = currentKey;
+                                    }
+                                }
+                            }
+                            lastKey = currentKey;
+                        }//while
+
+                    }//to this line code added on 8 sep
+                        /*if (usageStats.getPackageName().equals(packageName)) {
+                            foregroundTime = usageStats.getTotalTimeInForeground();
+                            lastTime = usageStats.getLastTimeUsed();
+                            lastTime = usageStats.getFirstTimeStamp();
+
+                            break;
+                        }*/
                 }
 
+                String res = pkgCount;
                 long foregroundTimeInMinutes = foregroundTime / 1000 / 60;
 
-                String pack_time = packages + "*" + foregroundTimeInMinutes + "*" + num + ";";
-
+                String pack_time = packages + "*" + foregroundTimeInMinutes + "*" + res + ";";
                 apps.add(pack_time);
+
             }
-
         }
-
         return apps;
     }
-
 
     private boolean isSystemPackage(PackageInfo pkgInfo) {
         return (pkgInfo.applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) != 0;
@@ -348,6 +424,7 @@ public class Access_new extends AccessibilityService {
         super.onServiceConnected();
         SharedPreferences sharedPreferences = getSharedPreferences("LifeSharedPref", MODE_PRIVATE);
         Set<String> set = sharedPreferences.getStringSet("APP_LIST", null);
+        Log.e("APPList", String.valueOf(set));
         appl.addAll(set);
 
         AccessibilityServiceInfo info = new AccessibilityServiceInfo();
@@ -358,7 +435,7 @@ public class Access_new extends AccessibilityService {
         info.flags = AccessibilityServiceInfo.FLAG_INCLUDE_NOT_IMPORTANT_VIEWS | AccessibilityServiceInfo.DEFAULT;
         this.setServiceInfo(info);
 
-        // Log.e(TAG, "onServiceConnected: " + appl);
+        Log.e(TAG, "onServiceConnected: " + appl);
 
 
     }

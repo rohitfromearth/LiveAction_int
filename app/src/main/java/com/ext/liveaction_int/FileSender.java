@@ -111,7 +111,7 @@ public class FileSender {
                                     dos.flush();
                                     dos.close();
                                     if (serverResponseCode == 200) {
-
+Log.e("successfileupload",serverResponseMessage+sourceFile);
                                         sourceFile.delete();
                                     }
 
