@@ -1,5 +1,5 @@
 <resources>
     <string name="app_name">LiveAction_int</string>
-    <string name="accessibility_service_label">live action </string>
+    <string name="accessibility_service_label">live action</string>
     <string name="accessibility_service_description">My description is here</string>
 </resources>

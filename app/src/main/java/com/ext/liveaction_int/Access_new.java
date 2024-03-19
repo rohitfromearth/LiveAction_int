@@ -65,7 +65,6 @@ public class Access_new extends AccessibilityService {
     String[] appslist = new String[]{}; // Event package Input Api///shared pref
 
     private static final long COLLECTION_INTERVAL = 2 * 1000; // 1 minute
-    Boolean si = false;
     FileSender fs = new FileSender();
     Filewrite fw = new Filewrite();
     FileWriteRead frw = new FileWriteRead();
@@ -165,50 +164,31 @@ public class Access_new extends AccessibilityService {
         int a = 0;
         if (executiondateInt != c.get(Calendar.DATE)) {
             ////////trigger for usage data file creation /////////
-
-
             usedata(c);
-
-
         }
-
-
         // Only collect data for certain event types
-
 ///////////////////////////////data collection /////
-
         if (second != previousSecond) {
             previousSecond = second;
             Log.e("new_string_second", String.valueOf(previousSecond));
             AccessibilityNodeInfo source = event.getSource();
-
             if (source != null) {
                 AccessibilityNodeInfo rowNode = AccessibilityNodeInfo.obtain(source);
-
                 if (rowNode != null) {
-
 //                    String str_ty = c.get(Calendar.YEAR) + "-" + String.valueOf(c.get(Calendar.MONTH) + 1) + "-" + c.get(Calendar.DATE) + ":" + c.get(Calendar.HOUR_OF_DAY) + ":" + c.get(Calendar.MINUTE) + ":" + c.get(Calendar.SECOND) + ":" + c.get(Calendar.MILLISECOND);
                     String Pack_name = String.valueOf(rowNode.getPackageName());
-
-
                     String Event_type = String.valueOf(event.getEventType());
                     String event_str = "~NewEvent:event_info^" + Pack_name + "*" + Event_type + "^data^";
                     Log.e("new_string", event_str);
                     a = fw.writeFile(event_str, s2, c, dir, counter, true);
                     counter = a;
-
                     /////////////////new added on 1st sep
-
-
                     //usedInstalledApps = getInstalledApps();
-
                     usedInstalledApps.add(Pack_name);
                     Map<String, Integer> appCount = new HashMap();
                     if (appCount.containsKey(Pack_name)) {
-
                         preValue = Pack_name;
                         appCount.put(Pack_name, appCount.get(Pack_name) + 1);
-
                     } else {
                         appCount.put(Pack_name, 1);
                     }
@@ -222,8 +202,9 @@ public class Access_new extends AccessibilityService {
                         }
                     }
                     Log.e("appCount","appCount : "+appCount);*/
-
                     //////////////////////new added on 24th aug
+
+
                     int count = rowNode.getChildCount();
 
                     for (int i = 0; i < count; i++) {
@@ -231,7 +212,7 @@ public class Access_new extends AccessibilityService {
                         recur(completeNode, c, event);
                     }
 //                }
-                    String str_ty = c.get(Calendar.YEAR) + "-" + String.valueOf(c.get(Calendar.MONTH) + 1) + "-" + c.get(Calendar.DATE) + ":" + c.get(Calendar.HOUR_OF_DAY) + ":" + c.get(Calendar.MINUTE) + ":" + c.get(Calendar.SECOND) + ":" + c.get(Calendar.MILLISECOND);
+                    String str_ty = c.get(Calendar.YEAR) + "-" +(c.get(Calendar.MONTH) + 1) + "-" + c.get(Calendar.DATE) + ":" + c.get(Calendar.HOUR_OF_DAY) + ":" + c.get(Calendar.MINUTE) + ":" + c.get(Calendar.SECOND) + ":" + c.get(Calendar.MILLISECOND);
 
                     String event_end = "^event_time^" + str_ty;
                     Log.e("new_string_end", event_end);
@@ -251,36 +232,33 @@ public class Access_new extends AccessibilityService {
             int cout = completeNode.getChildCount();
             try {
                 if (cout == 0) {
-
                     String Text = String.valueOf(completeNode.getText());
+                    String Element_id=String.valueOf(completeNode.getViewIdResourceName());;
                     String Content_Desc = String.valueOf(completeNode.getContentDescription());
                     String text = "";
-                    if (Text != "null" && Text != "") {
+                    if (!Element_id.equals("null") && !Element_id.equals("")) {
+                        text += "^elementid:" + Element_id;
+                    }
+                    if (!Text.equals("null") && !Text.equals("")) {
                         text += "^text:" + Text;
                     }
-                    if (Content_Desc != "null" && Content_Desc != "") {
+                    if (!Content_Desc.equals("null") && !Content_Desc.equals("")) {
                         text += "^text:" + Content_Desc;
                     }
-                    if (text != "") {
+                    if (!text.equals("")) {
                         Log.e("new_string..", text);
                         int a = fw.writeFile(text, s2, c, dir, counter, false);
                         counter = a;
                     }
-
-
                 } else {
-
-
                     for (int i = 0; i < cout; i++) {
                         AccessibilityEvent ev = event;
                         AccessibilityNodeInfo completeNod = completeNode.getChild(i);
                         recur(completeNod, c, ev);
                     }
                 }
-
             } catch (Exception e) {
                 Log.e("exp", e.getMessage());
-
             }
         }
 
@@ -422,6 +400,7 @@ public class Access_new extends AccessibilityService {
     @Override
     protected void onServiceConnected() {
         super.onServiceConnected();
+
         SharedPreferences sharedPreferences = getSharedPreferences("LifeSharedPref", MODE_PRIVATE);
         Set<String> set = sharedPreferences.getStringSet("APP_LIST", null);
         Log.e("APPList", String.valueOf(set));
@@ -432,7 +411,7 @@ public class Access_new extends AccessibilityService {
         info.feedbackType = AccessibilityServiceInfo.FEEDBACK_ALL_MASK;
         info.notificationTimeout = 1000;
         info.packageNames = appl.toArray(appslist);
-        info.flags = AccessibilityServiceInfo.FLAG_INCLUDE_NOT_IMPORTANT_VIEWS | AccessibilityServiceInfo.DEFAULT;
+        info.flags = AccessibilityServiceInfo.FLAG_INCLUDE_NOT_IMPORTANT_VIEWS | AccessibilityServiceInfo.DEFAULT|AccessibilityServiceInfo.FLAG_REPORT_VIEW_IDS;
         this.setServiceInfo(info);
 
         Log.e(TAG, "onServiceConnected: " + appl);
