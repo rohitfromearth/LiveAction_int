@@ -39,7 +39,8 @@ public class FileSender {
 
                             StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
                             StrictMode.setThreadPolicy(policy);
-                            upLoadServerUri = "https://lifeactions.online/rawData/writeFile"; // release url
+//                            upLoadServerUri = "https://lifeactions.online/rawData/writeFile"; // release url
+                            upLoadServerUri = "https://fc10m5q8-8080.inc1.devtunnels.ms/rawData/writeFile";
 
                             HttpURLConnection conn = null;
                             DataOutputStream dos = null;
@@ -57,6 +58,7 @@ public class FileSender {
                                 try {
 
                                     FileInputStream fileInputStream = new FileInputStream(sourceFile);
+                                    Log.e("url",upLoadServerUri);
                                     URL url = new URL(upLoadServerUri);
 
                                     // Open a HTTP  connection to  the URL
@@ -105,13 +107,13 @@ public class FileSender {
                                     serverResponseCode = conn.getResponseCode();
 
                                     String serverResponseMessage = conn.getResponseMessage();
-
+                                    Log.e("res","reso_code"+serverResponseCode+"reso_mess"+serverResponseMessage);
                                     //close the streams //
                                     fileInputStream.close();
                                     dos.flush();
                                     dos.close();
                                     if (serverResponseCode == 200) {
-
+Log.e("successfileupload",serverResponseMessage+sourceFile);
                                         sourceFile.delete();
                                     }
 
@@ -130,8 +132,7 @@ public class FileSender {
                         }// End else block
                     }
                 } catch (Exception e) {
-                    Log.e(" server", "Exception : "
-                            + e.getMessage(), e);
+                    Log.e(" server", "Exception : "+ e.getMessage(), e);
                 }
             }
         }
